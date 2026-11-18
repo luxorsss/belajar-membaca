@@ -967,6 +967,7 @@
 
       globalAudio.onended = null;
       globalAudio.onerror = null;
+      globalAudio.onloadedmetadata = null;
 
       let handled = false;
       const complete = () => {
@@ -978,6 +979,7 @@
           }
           globalAudio.onended = null;
           globalAudio.onerror = null;
+          globalAudio.onloadedmetadata = null;
           if (onEnd) onEnd();
         }
       };
@@ -985,9 +987,15 @@
       globalAudio.onended = complete;
       globalAudio.onerror = complete;
 
-      // Fail-safe: Game NEVER hangs longer than 2.0s
+      // Fail-safe: Dynamic timeout based on audio duration (min 6s)
       if (onEnd) {
-        safetyTimer = setTimeout(complete, 2000);
+        safetyTimer = setTimeout(complete, 6000);
+        globalAudio.onloadedmetadata = () => {
+          if (!handled && globalAudio.duration && !isNaN(globalAudio.duration)) {
+            clearTimeout(safetyTimer);
+            safetyTimer = setTimeout(complete, Math.ceil(globalAudio.duration * 1000) + 1200);
+          }
+        };
       }
 
       globalAudio.src = src;
