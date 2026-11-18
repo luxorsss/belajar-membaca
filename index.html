@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Belajar Mengenal Huruf</title>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --success: #16A34A;
+      --success-dark: #15803D;
+      --danger: #DC2626;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Fredoka", "Chalkboard SE", sans-serif;
+
+      /* Motion Tokens from animate skill */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --duration-snappy: 140ms;
+      --duration-standard: 240ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      touch-action: manipulation;
+      padding: max(14px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)) 16px;
+      overflow-x: hidden;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* Screen Transitions (Spatial consistency & enter) */
+    .screen {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: screenEnter var(--duration-standard) var(--ease-out) forwards;
+    }
+
+    @keyframes screenEnter {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* =========================================
+       SCREEN 1: MENU PILIH TAHAP (BOCIL FRIENDLY GRID)
+       ========================================= */
+    .hub-header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .hub-title-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FEF3C7;
+      color: #B45309;
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      border: 1px solid #FDE68A;
+    }
+
+    .hub-header h1 {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .hub-header p {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 2-Column Chunky Card Grid */
+    .stages-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      padding-bottom: 24px;
+    }
+
+    @media (max-width: 360px) {
+      .stages-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stage-toy-card {
+      background: var(--surface);
+      border-radius: 26px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      border: 3.5px solid transparent;
+      box-shadow: 0 7px 0 rgba(0, 0, 0, 0.08);
+      min-height: 155px;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+      position: relative;
+      will-change: transform;
+    }
+
+    .stage-toy-card:active {
+      transform: translateY(5px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .card-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stage-chip {
+      font-size: 0.76rem;
+      font-weight: 900;
+      padding: 4px 9px;
+      border-radius: 10px;
+      letter-spacing: 0.4px;
+    }
+
+    .stage-star-icon {
+      font-size: 1.15rem;
+    }
+
+    .stage-card-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text);
+      margin: 8px 0 6px 0;
+      line-height: 1.25;
+    }
+
+    .stage-card-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .bubble-char {
+      font-size: 0.88rem;
+      font-weight: 800;
+      background: #F1F5F9;
+      color: #334155;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stage-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .play-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .play-arrow-bubble {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    /* Distinct Bocil Color Themes per Stage Block */
+    .theme-stage-1 {
+      border-color: #E11D48;
+      box-shadow: 0 7px 0 #BE123C;
+    }
+    .theme-stage-1 .stage-chip { background: #FFE4E6; color: #BE123C; }
+    .theme-stage-1 .play-label { color: #E11D48; }
+
+    .theme-stage-2 {
+      border-color: #0284C7;
+      box-shadow: 0 7px 0 #0369A1;
+    }
+    .theme-stage-2 .stage-chip { background: #E0F2FE; color: #0369A1; }
+    .theme-stage-2 .play-label { color: #0284C7; }
+
+    .theme-stage-3 {
+      border-color: #16A34A;
+      box-shadow: 0 7px 0 #15803D;
+    }
+    .theme-stage-3 .stage-chip { background: #DCFCE7; color: #15803D; }
+    .theme-stage-3 .play-label { color: #16A34A; }
+
+    .theme-stage-4 {
+      border-color: #EA580C;
+      box-shadow: 0 7px 0 #C2410C;
+    }
+    .theme-stage-4 .stage-chip { background: #FFEDD5; color: #C2410C; }
+    .theme-stage-4 .play-label { color: #EA580C; }
+
+    .theme-stage-5 {
+      border-color: #7C3AED;
+      box-shadow: 0 7px 0 #6D28D9;
+      grid-column: span 2;
+    }
+    .theme-stage-5 .stage-chip { background: #F3E8FF; color: #6D28D9; }
+    .theme-stage-5 .play-label { color: #7C3AED; }
+
+    @media (max-width: 360px) {
+      .theme-stage-5 {
+        grid-column: span 1;
+      }
+    }
+
+    /* =========================================
+       SCREEN 2 & 3 COMMON TOP NAVIGATION
+       ========================================= */
+    .top-nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-nav-round {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: #334155;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 0 #CBD5E1;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+    }
+
+    .btn-nav-round:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #CBD5E1;
+    }
+
+    .pill-stage-name {
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: #334155;
+      background: #E2E8F0;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+
+    /* =========================================
+       SCREEN 2: FLASHCARD (1 SCREEN = 1 LETTER)
+       ========================================= */
+    .flashcard-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .giant-letter-card {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 1 / 1.15;
+      background: var(--surface);
+      border-radius: 38px;
+      border: 4.5px solid var(--primary);
+      box-shadow: 0 10px 0 var(--primary-dark), 0 20px 30px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+      will-change: transform;
+    }
+
+    .giant-letter-card:active {
+      transform: translateY(6px);
+      box-shadow: 0 4px 0 var(--primary-dark);
+    }
+
+    .letter-pair-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 16px;
+      line-height: 1;
+    }
+
+    .letter-upper {
+      font-size: clamp(6.5rem, 26vw, 10.5rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .letter-lower {
+      font-size: clamp(3.8rem, 15vw, 6rem);
+      font-weight: 800;
+      color: #64748B;
+      line-height: 1;
+    }
+
+    .card-tap-notice {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Arrow Nav Bar */
+    .nav-bar-arrows {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .arrow-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #334155;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #CBD5E1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+    }
+
+    .arrow-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #CBD5E1;
+    }
+
+    .arrow-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .dots-indicator-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .step-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #CBD5E1;
+      transition: all var(--duration-standard) var(--ease-out);
+    }
+
+    .step-dot.active {
+      width: 28px;
+      border-radius: 12px;
+    }
+
+    .btn-quiz-cta {
+      display: none;
+      background: var(--success);
+      color: #FFFFFF;
+      border: none;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 900;
+      padding: 14px 24px;
+      border-radius: 20px;
+      box-shadow: 0 5px 0 var(--success-dark);
+      cursor: pointer;
+      width: 100%;
+      max-width: 360px;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+    }
+
+    .btn-quiz-cta:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--success-dark);
+    }
+
+    .btn-quiz-cta.visible {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      animation: hop var(--duration-standard) var(--ease-spring);
+    }
+
+    /* =========================================
+       SCREEN 3: KUIS TEBAK HURUF
+       ========================================= */
+    .quiz-layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .quiz-prompt-header {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .speaker-replay-btn {
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      color: #1E293B;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.35rem;
+      cursor: pointer;
+      box-shadow: 0 3.5px 0 #CBD5E1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out);
+    }
+
+    .speaker-replay-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #CBD5E1;
+    }
+
+    .quiz-progress-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .q-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #CBD5E1;
+      transition: all var(--duration-snappy) var(--ease-out);
+    }
+
+    .q-dot.done {
+      background: var(--success);
+      transform: scale(1.3);
+    }
+
+    .quiz-cards-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .choice-card-btn {
+      aspect-ratio: 1 / 1;
+      background: var(--surface);
+      border-radius: 22px;
+      border: 3.5px solid #E2E8F0;
+      box-shadow: 0 6px 0 #CBD5E1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform var(--duration-snappy) var(--ease-out), box-shadow var(--duration-snappy) var(--ease-out), border-color 0.15s, background-color 0.15s;
+    }
+
+    .choice-card-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #CBD5E1;
+    }
+
+    .choice-card-btn.state-correct {
+      border-color: var(--success) !important;
+      background-color: #F0FDF4 !important;
+      color: var(--success) !important;
+      animation: hop 0.35s var(--ease-spring);
+    }
+
+    .choice-card-btn.state-wrong {
+      border-color: var(--danger) !important;
+      background-color: #FEF2F2 !important;
+      animation: wobble 0.3s ease-in-out;
+    }
+
+    /* =========================================
+       MICRO-INTERACTIONS & MOTION (emil-design-eng)
+       ========================================= */
+    /* Rubber Squish on Letter Tap */
+    @keyframes squishHop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.12, 0.88); }
+      60% { transform: scale(0.95, 1.05) translateY(-8px); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    /* Celebratory Hop */
+    @keyframes hop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.14); }
+      75% { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
+
+    /* Wrong Answer Wobble */
+    @keyframes wobble {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px) rotate(-1.5deg); }
+      40% { transform: translateX(8px) rotate(1.5deg); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .squish { animation: squishHop 360ms var(--ease-out); }
+    .hop { animation: hop 350ms var(--ease-spring); }
+    .wobble { animation: wobble 300ms ease-in-out; }
+
+    /* Reduced Motion Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      .screen.active { animation: none; }
+      .squish, .hop, .wobble { animation: none; }
+      .stage-toy-card, .giant-letter-card, .choice-card-btn { transition: none; }
+    }
+
+    /* Victory Dialog */
+    .victory-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 16px;
+    }
+
+    .victory-overlay.open {
+      display: flex;
+    }
+
+    .victory-card {
+      background: var(--surface);
+      border-radius: 28px;
+      padding: 24px 20px;
+      text-align: center;
+      max-width: 330px;
+      width: 100%;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+      animation: hop 400ms var(--ease-spring);
+    }
+
+    .victory-stars {
+      font-size: 2.8rem;
+      margin-bottom: 6px;
+    }
+
+    .victory-card h2 {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .victory-card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .btn-dialog-act {
+      background: var(--success);
+      color: #FFFFFF;
+      border: none;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      padding: 12px 18px;
+      border-radius: 14px;
+      box-shadow: 0 4px 0 var(--success-dark);
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      transition: transform var(--duration-snappy) var(--ease-out);
+    }
+
+    .btn-dialog-act:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--success-dark);
+    }
+
+    .btn-dialog-secondary {
+      background: #E2E8F0;
+      color: #334155;
+      box-shadow: 0 4px 0 #94A3B8;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 59;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+  <audio id="global-audio" preload="auto"></audio>
+
+  <div class="app-wrapper">
+
+    <!-- =========================================
+         SCREEN 1: MENU PILIH TAHAP (BOCIL FRIENDLY CARDS)
+         ========================================= -->
+    <section class="screen active" id="screen-stages">
+      <div class="hub-header">
+        <div class="hub-title-badge">
+          <span>✨ 26 Huruf Balita</span>
+        </div>
+        <h1>Pilih Tahap Belajar</h1>
+        <p>Pilih satu kartu di bawah untuk mulai</p>
+      </div>
+
+      <!-- 2-Column Chunky Card Grid -->
+      <div class="stages-cards-grid">
+        <!-- Stage 1 Card -->
+        <div class="stage-toy-card theme-stage-1" data-stage="1">
+          <div class="card-top-row">
+            <span class="stage-chip">Tahap 1</span>
+            <span class="stage-star-icon">⭐</span>
+          </div>
+          <div class="stage-card-title">Vokal Dasar</div>
+          <div class="stage-card-preview">
+            <span class="bubble-char">A</span>
+            <span class="bubble-char">I</span>
+            <span class="bubble-char">U</span>
+            <span class="bubble-char">E</span>
+            <span class="bubble-char">O</span>
+          </div>
+          <div class="stage-card-footer">
+            <span class="play-label">Mulai Belajar</span>
+            <span class="play-arrow-bubble">▶</span>
+          </div>
+        </div>
+
+        <!-- Stage 2 Card -->
+        <div class="stage-toy-card theme-stage-2" data-stage="2">
+          <div class="card-top-row">
+            <span class="stage-chip">Tahap 2</span>
+            <span class="stage-star-icon">⭐</span>
+          </div>
+          <div class="stage-card-title">Konsonan 1</div>
+          <div class="stage-card-preview">
+            <span class="bubble-char">B</span>
+            <span class="bubble-char">M</span>
+            <span class="bubble-char">P</span>
+            <span class="bubble-char">T</span>
+            <span class="bubble-char">N</span>
+          </div>
+          <div class="stage-card-footer">
+            <span class="play-label">Mulai Belajar</span>
+            <span class="play-arrow-bubble">▶</span>
+          </div>
+        </div>
+
+        <!-- Stage 3 Card -->
+        <div class="stage-toy-card theme-stage-3" data-stage="3">
+          <div class="card-top-row">
+            <span class="stage-chip">Tahap 3</span>
+            <span class="stage-star-icon">⭐</span>
+          </div>
+          <div class="stage-card-title">Konsonan 2</div>
+          <div class="stage-card-preview">
+            <span class="bubble-char">D</span>
+            <span class="bubble-char">L</span>
+            <span class="bubble-char">S</span>
+            <span class="bubble-char">K</span>
+            <span class="bubble-char">G</span>
+          </div>
+          <div class="stage-card-footer">
+            <span class="play-label">Mulai Belajar</span>
+            <span class="play-arrow-bubble">▶</span>
+          </div>
+        </div>
+
+        <!-- Stage 4 Card -->
+        <div class="stage-toy-card theme-stage-4" data-stage="4">
+          <div class="card-top-row">
+            <span class="stage-chip">Tahap 4</span>
+            <span class="stage-star-icon">⭐</span>
+          </div>
+          <div class="stage-card-title">Konsonan 3</div>
+          <div class="stage-card-preview">
+            <span class="bubble-char">H</span>
+            <span class="bubble-char">J</span>
+            <span class="bubble-char">C</span>
+            <span class="bubble-char">R</span>
+            <span class="bubble-char">W</span>
+          </div>
+          <div class="stage-card-footer">
+            <span class="play-label">Mulai Belajar</span>
+            <span class="play-arrow-bubble">▶</span>
+          </div>
+        </div>
+
+        <!-- Stage 5 Card (Spans across) -->
+        <div class="stage-toy-card theme-stage-5" data-stage="5">
+          <div class="card-top-row">
+            <span class="stage-chip">Tahap 5</span>
+            <span class="stage-star-icon">🌟</span>
+          </div>
+          <div class="stage-card-title">Konsonan Khusus & Serapan</div>
+          <div class="stage-card-preview">
+            <span class="bubble-char">Y</span>
+            <span class="bubble-char">F</span>
+            <span class="bubble-char">V</span>
+            <span class="bubble-char">Z</span>
+            <span class="bubble-char">Q</span>
+            <span class="bubble-char">X</span>
+          </div>
+          <div class="stage-card-footer">
+            <span class="play-label">Mulai Belajar</span>
+            <span class="play-arrow-bubble">▶</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================
+         SCREEN 2: FLASHCARD (1 SCREEN = 1 LETTER)
+         ========================================= -->
+    <section class="screen" id="screen-flashcard">
+      <div class="top-nav">
+        <button class="btn-nav-round" id="btn-back-hub">
+          <span>‹ Menu Tahap</span>
+        </button>
+        <span class="pill-stage-name" id="flashcard-pill-title">Tahap 1</span>
+        <button class="btn-nav-round" id="btn-quick-quiz" style="border-color:#BFDBFE; background:#EFF6FF; color:#2563EB;">
+          <span>🎯 Kuis</span>
+        </button>
+      </div>
+
+      <div class="flashcard-wrapper">
+        <div class="giant-letter-card" id="giant-letter-card">
+          <div class="letter-pair-box">
+            <span class="letter-upper" id="letter-upper">A</span>
+            <span class="letter-lower" id="letter-lower">a</span>
+          </div>
+          <div class="card-tap-notice">
+            <span>🔊 Sentuh huruf untuk bunyi</span>
+          </div>
+        </div>
+
+        <!-- Prev / Next Controls -->
+        <div class="nav-bar-arrows">
+          <button class="arrow-btn" id="btn-arrow-prev" aria-label="Huruf Sebelumnya">‹</button>
+          <div class="dots-indicator-row" id="dots-indicator-row"></div>
+          <button class="arrow-btn" id="btn-arrow-next" aria-label="Huruf Berikutnya">›</button>
+        </div>
+
+        <!-- Launch Quiz CTA -->
+        <button class="btn-quiz-cta" id="btn-quiz-cta" type="button">
+          <span>Ayo Main Tebak Huruf!</span> 🎯
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================
+         SCREEN 3: KUIS TEBAK HURUF
+         ========================================= -->
+    <section class="screen" id="screen-quiz">
+      <div class="top-nav">
+        <button class="btn-nav-round" id="btn-quiz-back-card">
+          <span>‹ Kartu Huruf</span>
+        </button>
+        <span class="pill-stage-name" id="quiz-pill-title">Kuis Tahap 1</span>
+        <button class="btn-nav-round" id="btn-quiz-back-hub">
+          <span>Menu 🏠</span>
+        </button>
+      </div>
+
+      <div class="quiz-layout">
+        <div class="quiz-prompt-header">
+          <span>Mana huruf <strong id="quiz-target-char">A</strong>?</span>
+          <button class="speaker-replay-btn" id="btn-repeat-quiz" type="button" aria-label="Putar Ulang Suara">
+            <span>🔊</span>
+          </button>
+        </div>
+
+        <div class="quiz-progress-dots" id="quiz-progress-dots"></div>
+        <div class="quiz-cards-grid" id="quiz-cards-grid"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Victory Dialog -->
+  <div class="victory-overlay" id="victory-modal">
+    <div class="victory-card">
+      <div class="victory-stars">⭐⭐⭐</div>
+      <h2>Hebat Sekali!</h2>
+      <p id="victory-message">Kamu berhasil menebak semua huruf di tahap ini!</p>
+      <button class="btn-dialog-act" id="btn-victory-next">Lanjut Tahap Berikutnya ➡️</button>
+      <button class="btn-dialog-act btn-dialog-secondary" id="btn-victory-retry">Ulangi Kuis Ini 🔄</button>
+      <button class="btn-dialog-act btn-dialog-secondary" id="btn-victory-hub">Pilih Tahap Lain 🏠</button>
+    </div>
+  </div>
+
+  <script>
+    // 26 Letters split into 5 progressive stages
+    const STAGES = {
+      1: {
+        id: 1,
+        title: "Tahap 1: Vokal Dasar",
+        badge: "Tahap 1",
+        letters: [
+          { char: 'A', small: 'a', color: '#E11D48', shadow: '#BE123C' },
+          { char: 'I', small: 'i', color: '#2563EB', shadow: '#1D4ED8' },
+          { char: 'U', small: 'u', color: '#16A34A', shadow: '#15803D' },
+          { char: 'E', small: 'e', color: '#D97706', shadow: '#B45309' },
+          { char: 'O', small: 'o', color: '#7C3AED', shadow: '#6D28D9' }
+        ]
+      },
+      2: {
+        id: 2,
+        title: "Tahap 2: Konsonan Awal",
+        badge: "Tahap 2",
+        letters: [
+          { char: 'B', small: 'b', color: '#0284C7', shadow: '#0369A1' },
+          { char: 'M', small: 'm', color: '#E11D48', shadow: '#BE123C' },
+          { char: 'P', small: 'p', color: '#CA8A04', shadow: '#A16207' },
+          { char: 'T', small: 't', color: '#4F46E5', shadow: '#4338CA' },
+          { char: 'N', small: 'n', color: '#0D9488', shadow: '#0F766E' }
+        ]
+      },
+      3: {
+        id: 3,
+        title: "Tahap 3: Konsonan Lembut",
+        badge: "Tahap 3",
+        letters: [
+          { char: 'D', small: 'd', color: '#9333EA', shadow: '#7E22CE' },
+          { char: 'L', small: 'l', color: '#EA580C', shadow: '#C2410C' },
+          { char: 'S', small: 's', color: '#16A34A', shadow: '#15803D' },
+          { char: 'K', small: 'k', color: '#2563EB', shadow: '#1D4ED8' },
+          { char: 'G', small: 'g', color: '#D97706', shadow: '#B45309' }
+        ]
+      },
+      4: {
+        id: 4,
+        title: "Tahap 4: Konsonan Tengah",
+        badge: "Tahap 4",
+        letters: [
+          { char: 'H', small: 'h', color: '#E11D48', shadow: '#BE123C' },
+          { char: 'J', small: 'j', color: '#0284C7', shadow: '#0369A1' },
+          { char: 'C', small: 'c', color: '#0D9488', shadow: '#0F766E' },
+          { char: 'R', small: 'r', color: '#EA580C', shadow: '#C2410C' },
+          { char: 'W', small: 'w', color: '#4F46E5', shadow: '#4338CA' }
+        ]
+      },
+      5: {
+        id: 5,
+        title: "Tahap 5: Konsonan Khusus",
+        badge: "Tahap 5",
+        letters: [
+          { char: 'Y', small: 'y', color: '#D97706', shadow: '#B45309' },
+          { char: 'F', small: 'f', color: '#2563EB', shadow: '#1D4ED8' },
+          { char: 'V', small: 'v', color: '#7C3AED', shadow: '#6D28D9' },
+          { char: 'Z', small: 'z', color: '#16A34A', shadow: '#15803D' },
+          { char: 'Q', small: 'q', color: '#0284C7', shadow: '#0369A1' },
+          { char: 'X', small: 'x', color: '#E11D48', shadow: '#BE123C' }
+        ]
+      }
+    };
+
+    // State
+    let activeStageId = 1;
+    let cardIndex = 0;
+
+    // --- Audio Engine with Fail-Safe ---
+    const globalAudio = document.getElementById('global-audio');
+    let safetyTimer = null;
+
+    function playSound(src, onEnd) {
+      if (safetyTimer) {
+        clearTimeout(safetyTimer);
+        safetyTimer = null;
+      }
+
+      globalAudio.onended = null;
+      globalAudio.onerror = null;
+
+      let handled = false;
+      const complete = () => {
+        if (!handled) {
+          handled = true;
+          if (safetyTimer) {
+            clearTimeout(safetyTimer);
+            safetyTimer = null;
+          }
+          globalAudio.onended = null;
+          globalAudio.onerror = null;
+          if (onEnd) onEnd();
+        }
+      };
+
+      globalAudio.onended = complete;
+      globalAudio.onerror = complete;
+
+      // Fail-safe: Game NEVER hangs longer than 2.0s
+      if (onEnd) {
+        safetyTimer = setTimeout(complete, 2000);
+      }
+
+      globalAudio.src = src;
+      globalAudio.load();
+      const p = globalAudio.play();
+      if (p !== undefined) {
+        p.catch(() => complete());
+      }
+    }
+
+    function getLetterSound(char) {
+      const lc = char.toLowerCase();
+      if (activeStageId === 1) {
+        return `audio/vokal_${lc}.mp3`;
+      }
+      return `audio/bunyi_${lc}.mp3`;
+    }
+
+    // Screens DOM
+    const screenStages = document.getElementById('screen-stages');
+    const screenFlashcard = document.getElementById('screen-flashcard');
+    const screenQuiz = document.getElementById('screen-quiz');
+    const victoryModal = document.getElementById('victory-modal');
+
+    function showScreen(screenEl) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      screenEl.classList.add('active');
+      victoryModal.classList.remove('open');
+    }
+
+    // --- SCREEN 1: HUB LOGIC ---
+    document.querySelectorAll('.stage-toy-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const stageId = parseInt(card.getAttribute('data-stage'), 10);
+        selectStage(stageId);
+      });
+    });
+
+    function selectStage(stageId) {
+      activeStageId = stageId;
+      cardIndex = 0;
+      showScreen(screenFlashcard);
+      initFlashcardScreen();
+    }
+
+    // --- SCREEN 2: FLASHCARD LOGIC ---
+    const flashcardPillTitle = document.getElementById('flashcard-pill-title');
+    const btnBackHub = document.getElementById('btn-back-hub');
+    const btnQuickQuiz = document.getElementById('btn-quick-quiz');
+    const giantLetterCard = document.getElementById('giant-letter-card');
+    const letterUpper = document.getElementById('letter-upper');
+    const letterLower = document.getElementById('letter-lower');
+    const btnArrowPrev = document.getElementById('btn-arrow-prev');
+    const btnArrowNext = document.getElementById('btn-arrow-next');
+    const dotsIndicatorRow = document.getElementById('dots-indicator-row');
+    const btnQuizCta = document.getElementById('btn-quiz-cta');
+
+    btnBackHub.addEventListener('click', () => {
+      showScreen(screenStages);
+    });
+
+    btnQuickQuiz.addEventListener('click', () => {
+      openQuizScreen();
+    });
+
+    function initFlashcardScreen() {
+      const stage = STAGES[activeStageId];
+      flashcardPillTitle.textContent = stage.badge;
+
+      // Nav dots
+      dotsIndicatorRow.innerHTML = '';
+      stage.letters.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = 'step-dot' + (idx === cardIndex ? ' active' : '');
+        dotsIndicatorRow.appendChild(dot);
+      });
+
+      renderCurrentCard(false);
+    }
+
+    function renderCurrentCard(autoPlay = false) {
+      const stage = STAGES[activeStageId];
+      const item = stage.letters[cardIndex];
+
+      letterUpper.textContent = item.char;
+      letterLower.textContent = item.small;
+
+      giantLetterCard.style.borderColor = item.color;
+      giantLetterCard.style.boxShadow = `0 10px 0 ${item.shadow}, 0 20px 30px rgba(0, 0, 0, 0.06)`;
+      letterUpper.style.color = item.color;
+
+      btnArrowPrev.disabled = cardIndex === 0;
+      btnArrowNext.disabled = cardIndex === stage.letters.length - 1;
+
+      // Update dots
+      const dots = dotsIndicatorRow.querySelectorAll('.step-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === cardIndex) {
+          dot.classList.add('active');
+          dot.style.background = item.color;
+        } else {
+          dot.classList.remove('active');
+          dot.style.background = '#CBD5E1';
+        }
+      });
+
+      // Show quiz button at last card
+      if (cardIndex === stage.letters.length - 1) {
+        btnQuizCta.classList.add('visible');
+      } else {
+        btnQuizCta.classList.remove('visible');
+      }
+
+      if (autoPlay) {
+        playCardSound();
+      }
+    }
+
+    function playCardSound() {
+      // Trigger Emil Kowalski Squish & Hop Micro-interaction
+      giantLetterCard.classList.remove('squish');
+      void giantLetterCard.offsetWidth;
+      giantLetterCard.classList.add('squish');
+
+      const stage = STAGES[activeStageId];
+      const item = stage.letters[cardIndex];
+      playSound(getLetterSound(item.char));
+    }
+
+    giantLetterCard.addEventListener('click', playCardSound);
+
+    btnArrowPrev.addEventListener('click', () => {
+      if (cardIndex > 0) {
+        cardIndex--;
+        renderCurrentCard(true);
+      }
+    });
+
+    btnArrowNext.addEventListener('click', () => {
+      const stage = STAGES[activeStageId];
+      if (cardIndex < stage.letters.length - 1) {
+        cardIndex++;
+        renderCurrentCard(true);
+      }
+    });
+
+    btnQuizCta.addEventListener('click', () => {
+      openQuizScreen();
+    });
+
+    // Touch Swipe
+    let touchX = 0;
+    giantLetterCard.addEventListener('touchstart', e => {
+      touchX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    giantLetterCard.addEventListener('touchend', e => {
+      const stage = STAGES[activeStageId];
+      const diff = e.changedTouches[0].screenX - touchX;
+      if (diff < -50 && cardIndex < stage.letters.length - 1) {
+        cardIndex++;
+        renderCurrentCard(true);
+      } else if (diff > 50 && cardIndex > 0) {
+        cardIndex--;
+        renderCurrentCard(true);
+      }
+    }, { passive: true });
+
+    // --- SCREEN 3: QUIZ LOGIC ---
+    const quizPillTitle = document.getElementById('quiz-pill-title');
+    const btnQuizBackCard = document.getElementById('btn-quiz-back-card');
+    const btnQuizBackHub = document.getElementById('btn-quiz-back-hub');
+    const quizTargetChar = document.getElementById('quiz-target-char');
+    const btnRepeatQuiz = document.getElementById('btn-repeat-quiz');
+    const quizProgressDots = document.getElementById('quiz-progress-dots');
+    const quizCardsGrid = document.getElementById('quiz-cards-grid');
+
+    let quizRound = 0;
+    let quizPool = [];
+    let currentQuizTarget = null;
+    let isAnsweringLocked = false;
+
+    btnQuizBackCard.addEventListener('click', () => {
+      showScreen(screenFlashcard);
+      renderCurrentCard(false);
+    });
+
+    btnQuizBackHub.addEventListener('click', () => {
+      showScreen(screenStages);
+    });
+
+    function openQuizScreen() {
+      showScreen(screenQuiz);
+      const stage = STAGES[activeStageId];
+      quizPillTitle.textContent = `Kuis ${stage.badge}`;
+
+      quizRound = 0;
+      isAnsweringLocked = false;
+      quizPool = [...stage.letters].sort(() => Math.random() - 0.5);
+
+      // Quiz dots
+      quizProgressDots.innerHTML = '';
+      quizPool.forEach(() => {
+        const dot = document.createElement('div');
+        dot.className = 'q-dot';
+        quizProgressDots.appendChild(dot);
+      });
+
+      renderNextQuizQuestion();
+    }
+
+    function renderNextQuizQuestion() {
+      isAnsweringLocked = false;
+      if (quizRound >= quizPool.length) {
+        finishQuiz();
+        return;
+      }
+
+      currentQuizTarget = quizPool[quizRound];
+      quizTargetChar.textContent = currentQuizTarget.char;
+
+      // Update dots
+      const dots = quizProgressDots.querySelectorAll('.q-dot');
+      dots.forEach((dot, idx) => {
+        if (idx < quizRound) dot.classList.add('done');
+        else dot.classList.remove('done');
+      });
+
+      // Render choices
+      const stage = STAGES[activeStageId];
+      quizCardsGrid.innerHTML = '';
+
+      stage.letters.forEach(item => {
+        const cardBtn = document.createElement('button');
+        cardBtn.type = 'button';
+        cardBtn.className = 'choice-card-btn';
+        cardBtn.textContent = item.char;
+        cardBtn.style.color = item.color;
+        cardBtn.style.borderColor = item.color;
+        cardBtn.style.boxShadow = `0 5.5px 0 ${item.shadow}`;
+
+        cardBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          handleQuizTap(cardBtn, item);
+        });
+
+        quizCardsGrid.appendChild(cardBtn);
+      });
+
+      playQuestionSound();
+    }
+
+    function playQuestionSound() {
+      if (!currentQuizTarget) return;
+      const lc = currentQuizTarget.char.toLowerCase();
+      playSound(`audio/tanya_${lc}.mp3`);
+    }
+
+    btnRepeatQuiz.addEventListener('click', (e) => {
+      e.preventDefault();
+      btnRepeatQuiz.classList.add('hop');
+      setTimeout(() => btnRepeatQuiz.classList.remove('hop'), 300);
+      playQuestionSound();
+    });
+
+    function handleQuizTap(btn, item) {
+      if (isAnsweringLocked || !currentQuizTarget) return;
+
+      if (item.char === currentQuizTarget.char) {
+        // Correct answer: hop + green feedback + confetti
+        isAnsweringLocked = true;
+        btn.classList.add('state-correct');
+        triggerConfetti();
+
+        quizRound++;
+        const dots = quizProgressDots.querySelectorAll('.q-dot');
+        if (dots[quizRound - 1]) dots[quizRound - 1].classList.add('done');
+
+        const lc = item.char.toLowerCase();
+        playSound(`audio/benar_${lc}.mp3`, () => {
+          setTimeout(renderNextQuizQuestion, 350);
+        });
+
+      } else {
+        // Wrong answer: gentle wobble + soft red state, immediate retry allowed
+        btn.classList.remove('state-wrong');
+        void btn.offsetWidth;
+        btn.classList.add('state-wrong');
+        setTimeout(() => btn.classList.remove('state-wrong'), 500);
+
+        playSound('audio/salah.mp3');
+      }
+    }
+
+    function finishQuiz() {
+      triggerConfetti();
+      victoryModal.classList.add('open');
+      playSound('audio/selesai.mp3');
+
+      const btnVictoryNext = document.getElementById('btn-victory-next');
+      if (activeStageId >= 5) {
+        btnVictoryNext.textContent = 'Kembali ke Tahap 1 🏁';
+      } else {
+        btnVictoryNext.textContent = `Lanjut ke Tahap ${activeStageId + 1} ➡️`;
+      }
+    }
+
+    // Victory Actions
+    document.getElementById('btn-victory-retry').addEventListener('click', () => {
+      victoryModal.classList.remove('open');
+      openQuizScreen();
+    });
+
+    document.getElementById('btn-victory-next').addEventListener('click', () => {
+      victoryModal.classList.remove('open');
+      if (activeStageId < 5) {
+        selectStage(activeStageId + 1);
+      } else {
+        selectStage(1);
+      }
+    });
+
+    document.getElementById('btn-victory-hub').addEventListener('click', () => {
+      showScreen(screenStages);
+    });
+
+    // Confetti Engine
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function triggerConfetti() {
+      const colors = ['#E11D48', '#2563EB', '#16A34A', '#D97706', '#7C3AED'];
+      particles = [];
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.7) * 12,
+          size: Math.random() * 7 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 8,
+          opacity: 1
+        });
+      }
+      renderConfetti();
+    }
+
+    function renderConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.rotation += p.vRot;
+        p.opacity -= 0.02;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+
+        if (p.opacity <= 0) particles.splice(idx, 1);
+      });
+
+      if (particles.length > 0) requestAnimationFrame(renderConfetti);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  </script>
+</body>
+</html>
